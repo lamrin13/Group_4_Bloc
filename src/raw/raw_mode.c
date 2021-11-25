@@ -1,6 +1,5 @@
 #include "../../include/raw_mode.h"
 
-struct editorConfig E;
 
 void die(const char *message) {
     write(STDOUT_FILENO, "\x1b[2J", 4);

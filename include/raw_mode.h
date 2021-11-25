@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
-
+#define TAB 8
 typedef struct erow {
     int size;
     int rsize;
