@@ -4,7 +4,7 @@
 
 
 void refresh_screen() {
-
+    scroll();
     struct abuf ab = ABUF_INIT;
 
     append(&ab, "\x1b[?25l", 6);
@@ -201,7 +201,7 @@ int read_key() {
 }
 
 void process_keypress() {
-    static int quit_times = 3;
+    static int quit_times = 1;
 
     int c = read_key();
 
@@ -210,7 +210,7 @@ void process_keypress() {
             if (E.dirty && quit_times > 0) {
                 show_status_message("WARNING!!! File has unsaved changes. "
                                        "Press Ctrl-S to save chnages or, "
-                                       "Press Ctrl-Q one more times to quit.", quit_times);
+                                       "Press Ctrl-Q %d more time to quit.",quit_times);
                 quit_times--;
                 return;
             }
@@ -219,7 +219,7 @@ void process_keypress() {
             exit(0);
         }
         else if(c == CTRL_KEY('s')) {
-            //Code for save function goes here
+            save();
         }
         else if(c == 'i' || c=='I'){
             E.mode = 1;
@@ -265,5 +265,5 @@ void process_keypress() {
             insert_character(c);
         }
     }
-    quit_times = 3;
+    quit_times = 1;
 }

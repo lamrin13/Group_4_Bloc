@@ -29,7 +29,7 @@ struct editorConfig {
     int dirty;
     int mode;
     char *filename;
-    char statusmsg[80];
+    char statusmsg[200];
     time_t statusmsg_time;
     struct termios orig_termios;
 };

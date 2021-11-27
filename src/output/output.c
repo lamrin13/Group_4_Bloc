@@ -4,10 +4,10 @@
 
 
 void show_status_message(const char *fmt, ...) {
-    va_list ap;
-    va_start(ap, fmt);
-    vsnprintf(E.statusmsg, sizeof(E.statusmsg), fmt, ap);
-    va_end(ap);
+    va_list append;
+    va_start(append, fmt);
+    vsnprintf(E.statusmsg, sizeof(E.statusmsg), fmt, append);
+    va_end(append);
     E.statusmsg_time = time(NULL);
 }
 
@@ -67,4 +67,73 @@ void delete_row(int at) {
     memmove(&E.row[at], &E.row[at + 1], sizeof(erow) * (E.numrows - at - 1));
     E.numrows--;
     E.dirty++;
+}
+
+int row_postion(erow *row, int cx) {
+    int rx = 0;
+    int j;
+    for (j = 0; j < cx; j++) {
+        if (row->chars[j] == '\t')
+            rx += (TAB - 1) - (rx % TAB);
+        rx++;
+    }
+    return rx;
+}
+
+void scroll() {
+    E.rx = 0;
+    if (E.cy < E.numrows) {
+        E.rx = row_postion(&E.row[E.cy], E.cx);
+    }
+
+    if (E.cy < E.rowoff) {
+        E.rowoff = E.cy;
+    }
+    if (E.cy >= E.rowoff + E.screenrows) {
+        E.rowoff = E.cy - E.screenrows + 1;
+    }
+    if (E.rx < E.coloff) {
+        E.coloff = E.rx;
+    }
+    if (E.rx >= E.coloff + E.screencols) {
+        E.coloff = E.rx - E.screencols + 1;
+    }
+}
+char *data_to_buffer(int *buffer_length) {
+    int total_length = 0;
+    int j;
+    for (j = 0; j < E.numrows; j++)
+        total_length += E.row[j].size + 1;
+    *buffer_length = total_length;
+
+    char *buffer = malloc(total_length);
+    char *p = buffer;
+    for (j = 0; j < E.numrows; j++) {
+        memcpy(p, E.row[j].chars, E.row[j].size);
+        p += E.row[j].size;
+        *p = '\n';
+        p++;
+    }
+
+    return buffer;
+}
+void save(){
+    int len;
+    char *buf = data_to_buffer(&len);
+
+    int fd = open(E.filename, O_RDWR | O_CREAT, 0644);
+    if (fd != -1) {
+        if (ftruncate(fd, len) != -1) {
+            if (write(fd, buf, len) == len) {
+                close(fd);
+                free(buf);
+                E.dirty = 0;
+                show_status_message("File Saved Successfully. Press Ctrl+Q to quit.");
+                return;
+            }
+        }
+        close(fd);
+    }
+
+    free(buf);
 }
