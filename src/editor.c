@@ -8,7 +8,7 @@
 #include <sys/ioctl.h>
 
 
-struct editorConfig E;
+extern struct editorConfig E;
 
 
 
@@ -35,7 +35,6 @@ void editor_open(char *filename) {
     free(E.filename);
     E.filename = strdup(filename);
 
-    printf("File Name: %s",E.filename);
     FILE *fp = fopen(filename, "r");
     if (!fp) die("fopen");
 
@@ -111,7 +110,8 @@ int main(int argc, char *argv[]){
     show_status_message("HELP: Ctrl-S = save | Ctrl-Q = quit");
     while(1){
         refresh_screen();
-        process_keypress();
+        int c = read_key();
+        process_keypress(c);
     }
 
     return 0;

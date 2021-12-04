@@ -2,7 +2,7 @@
 #include "../../include/raw_mode.h"
 #include "../../include/output.h"
 
-
+struct editorConfig E;
 void refresh_screen() {
     scroll();
     struct abuf ab = ABUF_INIT;
@@ -200,10 +200,8 @@ int read_key() {
     }
 }
 
-void process_keypress() {
+void process_keypress(int c) {
     static int quit_times = 1;
-
-    int c = read_key();
 
     if(E.mode==0) {
         if (c == CTRL_KEY('q')) {
@@ -263,6 +261,33 @@ void process_keypress() {
         }
         else{
             insert_character(c);
+            if(c=='('){
+                insert_character(')');
+                E.cx--;
+            }
+            else if(c=='['){
+                insert_character(']');
+                E.cx--;
+            }
+            else if(c=='<'){
+                insert_character('>');
+                E.cx--;
+            }
+            else if(c=='{'){
+                erow *row = &E.row[E.cy];
+                if(strchr(row->chars,'=')==NULL){
+                    insert_new_line();
+                    insert_new_line();
+                    insert_character('}');
+                    E.cx--;
+                    E.cy--;
+                    insert_character(TAB);
+                }
+                else {
+                    insert_character('}');
+                    E.cx--;
+                }
+            }
         }
     }
     quit_times = 1;

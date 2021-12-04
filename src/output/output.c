@@ -2,7 +2,7 @@
 #include "../../include/raw_mode.h"
 #include "../../include/output.h"
 
-
+extern struct editorConfig E;
 void show_status_message(const char *fmt, ...) {
     va_list append;
     va_start(append, fmt);

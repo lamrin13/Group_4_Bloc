@@ -9,7 +9,7 @@
 #include <stdlib.h>
 #include <termios.h>
 #include <unistd.h>
-#define TAB 8
+#define TAB 9
 typedef struct erow {
     int size;
     int rsize;
@@ -34,7 +34,6 @@ struct editorConfig {
     struct termios orig_termios;
 };
 
-extern struct editorConfig E;
 
 
 
