@@ -3,4 +3,4 @@ touch "./script/test_result.txt"
 make clean
 make test
 cd bin
-./tests &> "../script/test_result.txt"
+./tests >&1 | tee "../script/test_result.txt"

@@ -150,6 +150,35 @@ void insert_character(int c) {
     insert_char_helper(&E.row[E.cy], E.cx, c);
     E.cx++;
 }
+void auto_complete_bracket(int c){
+    if(c=='('){
+        insert_character(')');
+        E.cx--;
+    }
+    else if(c=='['){
+        insert_character(']');
+        E.cx--;
+    }
+    else if(c=='<'){
+        insert_character('>');
+        E.cx--;
+    }
+    else if(c=='{'){
+        erow *row = &E.row[E.cy];
+        if(strchr(row->chars,'=')==NULL){
+            insert_new_line();
+            insert_new_line();
+            insert_character('}');
+            E.cx--;
+            E.cy--;
+            insert_character(TAB);
+        }
+        else {
+            insert_character('}');
+            E.cx--;
+        }
+    }
+}
 int read_key() {
     int nread;
     char c;
@@ -261,34 +290,40 @@ void process_keypress(int c) {
         }
         else{
             insert_character(c);
-            if(c=='('){
-                insert_character(')');
-                E.cx--;
-            }
-            else if(c=='['){
-                insert_character(']');
-                E.cx--;
-            }
-            else if(c=='<'){
-                insert_character('>');
-                E.cx--;
-            }
-            else if(c=='{'){
-                erow *row = &E.row[E.cy];
-                if(strchr(row->chars,'=')==NULL){
-                    insert_new_line();
-                    insert_new_line();
-                    insert_character('}');
-                    E.cx--;
-                    E.cy--;
-                    insert_character(TAB);
-                }
-                else {
-                    insert_character('}');
-                    E.cx--;
-                }
+            if(c=='(' || c=='[' || c=='<' || c=='{'){
+                auto_complete_bracket(c);
             }
         }
     }
     quit_times = 1;
+}
+
+char *input_prompt(char *prompt) {
+    size_t bufsize = 128;
+    char *buf = malloc(bufsize);
+
+    size_t buflen = 0;
+    buf[0] = '\0';
+
+    while (1) {
+        show_status_message(prompt, buf);
+        refresh_screen();
+
+        int c = read_key();
+        if (c == DEL_KEY || c == CTRL_KEY('h') || c == BACKSPACE) {
+            if (buflen != 0) buf[--buflen] = '\0';
+        } else if (c == '\x1b') {
+//            show_status_message("");
+            free(buf);
+            return NULL;
+        } else if (c == '\r') {
+            if (buflen != 0) {
+//                show_status_message("");
+                return buf;
+            }
+        } else if (!iscntrl(c) && c < 128) {
+            buf[buflen++] = c;
+            buf[buflen] = '\0';
+        }
+    }
 }

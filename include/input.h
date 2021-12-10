@@ -36,4 +36,5 @@ void display_rows(struct abuf *ab);
 int read_key();
 void insert_new_line();
 void process_keypress(int c);
+char *input_prompt(char *prompt);
 #endif

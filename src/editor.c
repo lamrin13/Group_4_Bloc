@@ -36,7 +36,10 @@ void editor_open(char *filename) {
     E.filename = strdup(filename);
 
     FILE *fp = fopen(filename, "r");
-    if (!fp) die("fopen");
+    if (!fp) {
+        E.filename = filename;
+        return;
+    }
 
     char *line = NULL;
     size_t linecap = 0;

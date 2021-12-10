@@ -1,5 +1,6 @@
 
 #include "../../include/raw_mode.h"
+#include "../../include/input.h"
 #include "../../include/output.h"
 
 extern struct editorConfig E;
@@ -118,6 +119,14 @@ char *data_to_buffer(int *buffer_length) {
     return buffer;
 }
 void save(){
+    if (E.filename == NULL) {
+        E.filename = input_prompt("Save as: %s (ESC to cancel)");
+        if (E.filename == NULL) {
+            show_status_message("File Name cannot be empty.");
+            return;
+        }
+    }
+
     int len;
     char *buf = data_to_buffer(&len);
 
