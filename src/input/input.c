@@ -155,6 +155,14 @@ void auto_complete_bracket(int c){
         insert_character(')');
         E.cx--;
     }
+    else if(c=='"'){
+        insert_character('"');
+        E.cx--;
+    }
+    else if(c=='\''){
+        insert_character('\'');
+        E.cx--;
+    }
     else if(c=='['){
         insert_character(']');
         E.cx--;
@@ -294,7 +302,7 @@ void process_keypress(int c) {
         }
         else{
             insert_character(c);
-            if(c=='(' || c=='[' || c=='<' || c=='{'){
+            if(c=='(' || c=='[' || c=='<' || c=='{' || c=='"' || c=='\''){
                 auto_complete_bracket(c);
             }
         }
