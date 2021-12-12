@@ -110,7 +110,7 @@ int main(int argc, char *argv[]){
     if (argc >= 2) {
         editor_open(argv[1]);
     }
-    show_status_message("HELP: Ctrl-S = save | Ctrl-Q = quit");
+    show_status_message("Guide: Ctrl-S = save | Ctrl-f = search | Ctrl-Q = quit");
     while(1){
         refresh_screen();
         int c = read_key();
