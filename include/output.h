@@ -20,4 +20,5 @@ void append_string(erow *row, char *s, size_t len);
 void delete_row(int at);
 void scroll();
 void save();
+void search();
 #endif

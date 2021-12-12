@@ -8,7 +8,7 @@
 #include <sys/ioctl.h>
 
 
-struct editorConfig E;
+extern struct editorConfig E;
 
 
 
@@ -35,9 +35,11 @@ void editor_open(char *filename) {
     free(E.filename);
     E.filename = strdup(filename);
 
-    printf("File Name: %s",E.filename);
     FILE *fp = fopen(filename, "r");
-    if (!fp) die("fopen");
+    if (!fp) {
+        E.filename = filename;
+        return;
+    }
 
     char *line = NULL;
     size_t linecap = 0;
@@ -108,10 +110,11 @@ int main(int argc, char *argv[]){
     if (argc >= 2) {
         editor_open(argv[1]);
     }
-    show_status_message("HELP: Ctrl-S = save | Ctrl-Q = quit");
+    show_status_message("Guide: Ctrl-S = save | Ctrl-f = search | Ctrl-Q = quit");
     while(1){
         refresh_screen();
-        process_keypress();
+        int c = read_key();
+        process_keypress(c);
     }
 
     return 0;

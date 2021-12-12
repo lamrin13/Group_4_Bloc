@@ -1,0 +1,23 @@
+---------------------------------
+New line test passed
+---------------------------------
+Default mode is command mode...Test passed
+---------------------------------
+Insert mode...Test passed
+---------------------------------
+Inserted characters successfully...Test passed
+---------------------------------
+Back to default mode...Test passed
+---------------------------------
+Characters not inseted in command mode...Test passed
+---------------------------------
+Home key test passed
+---------------------------------
+Erased file content successfully...Test passed
+---------------------------------
+Saved file content successfully...Test passed
+---------------------------------
+---------------------------------
+Test result: 9/9 tests passed
+---------------------------------
+---------------------------------

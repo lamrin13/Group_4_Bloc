@@ -1,8 +1,9 @@
 
 #include "../../include/raw_mode.h"
+#include "../../include/input.h"
 #include "../../include/output.h"
 
-
+extern struct editorConfig E;
 void show_status_message(const char *fmt, ...) {
     va_list append;
     va_start(append, fmt);
@@ -118,6 +119,14 @@ char *data_to_buffer(int *buffer_length) {
     return buffer;
 }
 void save(){
+    if (E.filename == NULL) {
+        E.filename = input_prompt("Save as: %s (ESC to cancel)",NULL);
+        if (E.filename == NULL) {
+            show_status_message("File Name cannot be empty.");
+            return;
+        }
+    }
+
     int len;
     char *buf = data_to_buffer(&len);
 
@@ -136,4 +145,75 @@ void save(){
     }
 
     free(buf);
+}
+
+int cusroor_xposition(erow *row, int rx) {
+    int cur_rx = 0;
+    int cx;
+    for (cx = 0; cx < row->size; cx++) {
+        if (row->chars[cx] == '\t')
+            cur_rx += (TAB - 1) - (cur_rx % TAB);
+        cur_rx++;
+
+        if (cur_rx > rx) return cx;
+    }
+    return cx;
+}
+
+
+void search_helper(char *query, int key) {
+    printf("Searching for %s\n",query);
+    static int last_match = -1;
+    static int direction = 1;
+
+    if (key == '\r' || key == '\x1b') {
+        last_match = -1;
+        direction = 1;
+        return;
+    } else if (key == ARROW_RIGHT || key == ARROW_DOWN) {
+        direction = 1;
+    } else if (key == ARROW_LEFT || key == ARROW_UP) {
+        direction = -1;
+    } else {
+        last_match = -1;
+        direction = 1;
+    }
+
+    if (last_match == -1) direction = 1;
+    int current = last_match;
+    int i;
+    for (i = 0; i < E.numrows; i++) {
+        current += direction;
+        if (current == -1) current = E.numrows - 1;
+        else if (current == E.numrows) current = 0;
+
+        erow *row = &E.row[current];
+        char *match = strstr(row->render, query);
+        if (match) {
+            last_match = current;
+            E.cy = current;
+            E.cx = cusroor_xposition(row, match - row->render);
+            E.rowoff = E.numrows;
+            break;
+        }
+    }
+}
+
+void search() {
+    int saved_cx = E.cx;
+    int saved_cy = E.cy;
+    int saved_coloff = E.coloff;
+    int saved_rowoff = E.rowoff;
+
+    char *query = input_prompt("Search: %s (Use ESC/Arrows/Enter)",
+                               search_helper);
+
+    if (query) {
+        free(query);
+    } else {
+        E.cx = saved_cx;
+        E.cy = saved_cy;
+        E.coloff = saved_coloff;
+        E.rowoff = saved_rowoff;
+    }
 }

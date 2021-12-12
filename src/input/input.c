@@ -2,7 +2,7 @@
 #include "../../include/raw_mode.h"
 #include "../../include/output.h"
 
-
+struct editorConfig E;
 void refresh_screen() {
     scroll();
     struct abuf ab = ABUF_INIT;
@@ -150,6 +150,35 @@ void insert_character(int c) {
     insert_char_helper(&E.row[E.cy], E.cx, c);
     E.cx++;
 }
+void auto_complete_bracket(int c){
+    if(c=='('){
+        insert_character(')');
+        E.cx--;
+    }
+    else if(c=='['){
+        insert_character(']');
+        E.cx--;
+    }
+    else if(c=='<'){
+        insert_character('>');
+        E.cx--;
+    }
+    else if(c=='{'){
+        erow *row = &E.row[E.cy];
+        if(strchr(row->chars,'=')==NULL){
+            insert_new_line();
+            insert_new_line();
+            insert_character('}');
+            E.cx--;
+            E.cy--;
+            insert_character(TAB);
+        }
+        else {
+            insert_character('}');
+            E.cx--;
+        }
+    }
+}
 int read_key() {
     int nread;
     char c;
@@ -200,14 +229,12 @@ int read_key() {
     }
 }
 
-void process_keypress() {
+void process_keypress(int c) {
     static int quit_times = 1;
 
-    int c = read_key();
-
     if(E.mode==0) {
-        if (c == CTRL_KEY('q')) {
-            if (E.dirty && quit_times > 0) {
+        if (c == CTRL_KEY('q')){
+            if (E.dirty && quit_times > 0){
                 show_status_message("WARNING!!! File has unsaved changes. "
                                        "Press Ctrl-S to save chnages or, "
                                        "Press Ctrl-Q %d more time to quit.",quit_times);
@@ -218,8 +245,12 @@ void process_keypress() {
             write(STDOUT_FILENO, "\x1b[H", 3);
             exit(0);
         }
-        else if(c == CTRL_KEY('s')) {
+        else if(c == CTRL_KEY('s')){
             save();
+        }
+        else if(c == CTRL_KEY('f')){
+            printf("searching for something...");
+            search();
         }
         else if(c == 'i' || c=='I'){
             E.mode = 1;
@@ -256,14 +287,56 @@ void process_keypress() {
         }
         else if(c == ESC){
             E.mode = 0;
-            show_status_message("Entered in command mode. ""Press Ctrl-s to save. ""Press Ctrl-q to quit.");
+            show_status_message("Entered in command mode. ""Press Ctrl-s to save. ""Press Ctrl-f to search. ""Press Ctrl-q to quit.");
         }
         else if(c == CTRL_KEY('q') || c == CTRL_KEY('s')){
             show_status_message("Press ESC (escape) key to enter in command mode. No action taken.");
         }
         else{
             insert_character(c);
+            if(c=='(' || c=='[' || c=='<' || c=='{'){
+                auto_complete_bracket(c);
+            }
         }
     }
     quit_times = 1;
+}
+
+char *input_prompt(char *prompt, void (*search)(char *,int)) {
+    size_t bufsize = 128;
+    char *buf = malloc(bufsize);
+
+    size_t buflen = 0;
+    buf[0] = '\0';
+
+    while (1) {
+        show_status_message(prompt, buf);
+        refresh_screen();
+
+        int c = read_key();
+        if (c == DEL_KEY || c == CTRL_KEY('h') || c == BACKSPACE) {
+            if (buflen != 0) buf[--buflen] = '\0';
+        } else if (c == '\x1b') {
+            free(buf);
+            if (search){
+                search(buf, c);
+                show_status_message("");
+            }
+            return NULL;
+        } else if (c == '\r') {
+            if (buflen != 0) {
+                if(search){
+                    search(buf,c);
+                    show_status_message("");
+                }
+                return buf;
+            }
+        } else if (!iscntrl(c) && c < 128) {
+            buf[buflen++] = c;
+            buf[buflen] = '\0';
+        }
+        if (search){
+            search(buf, c);
+        }
+    }
 }
