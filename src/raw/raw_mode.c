@@ -1,7 +1,10 @@
 #include "../../include/raw_mode.h"
 
 extern struct editorConfig E;
-
+/**
+ * @brief This function is used to exit the editor when error occurs
+ * @param message The message to display while exiting
+ */
 void die(const char *message) {
     write(STDOUT_FILENO, "\x1b[2J", 4);
     write(STDOUT_FILENO, "\x1b[H", 3);
@@ -10,11 +13,16 @@ void die(const char *message) {
     exit(1);
 }
 
+/**
+ * This function disables raw mode when exiting the editor
+ */
 void disable_raw_mode() {
     if (tcsetattr(STDIN_FILENO, TCSAFLUSH, &E.orig_termios) == -1)
         die("Exiting Raw Mode");
 }
-
+/**
+ * This functions enable raw mode, which ignores all the bash commands
+ */
 void raw_mode() {
     if (tcgetattr(STDIN_FILENO, &E.orig_termios) == -1) {
         die("Failed to enable raw mode");

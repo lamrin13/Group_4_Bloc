@@ -3,6 +3,10 @@
 #include "../../include/output.h"
 
 struct editorConfig E;
+
+/**
+ * Refelect the buffer changes on the editoe screen
+ */
 void refresh_screen() {
     scroll();
     struct abuf ab = ABUF_INIT;
@@ -11,7 +15,6 @@ void refresh_screen() {
     append(&ab, "\x1b[H", 3);
 
     display_rows(&ab);
-//    display_status(&ab);
     display_message(&ab);
 
     char buf[32];
@@ -25,6 +28,12 @@ void refresh_screen() {
     free((&ab)->b);
 }
 
+/**
+ * Append the string to buffer for the editor
+ * @param ab Buffer data structure for editor content
+ * @param s String to be appended
+ * @param len Length of the string to be appended
+ */
 void append(struct abuf *ab, const char *s, int len) {
     char *new = realloc(ab->b, ab->len + len);
 
@@ -52,6 +61,11 @@ void display_rows(struct abuf *ab) {
     }
 }
 
+/**
+ * This function is used to display message
+ * at the bottom of the editor window
+ * @param ab The message to be displayed
+ */
 void display_message(struct abuf *ab) {
     append(ab, "\x1b[K", 3);
     int msglen = strlen(E.statusmsg);
@@ -60,6 +74,10 @@ void display_message(struct abuf *ab) {
         append(ab, E.statusmsg, msglen);
 }
 
+/**
+ * This function is called when Enter key is pressed
+ * to enter a new line.
+ */
 void insert_new_line() {
     if (E.cx == 0) {
         insert_row(E.cy, "", 0);
@@ -74,6 +92,13 @@ void insert_new_line() {
     E.cy++;
     E.cx = 0;
 }
+
+/**
+ * @brief This function is a helper function to shift
+ * characters on right to move left
+ * @param row The row data structure
+ * @param at Position of cursor of which right character is to be deleted
+ */
 void delete_char_helper(erow *row, int at) {
     if (at < 0 || at >= row->size) return;
     memmove(&row->chars[at], &row->chars[at + 1], row->size - at);
@@ -81,6 +106,10 @@ void delete_char_helper(erow *row, int at) {
     update_row(row);
     E.dirty++;
 }
+/**
+ * This function is called when Delete key or Backspace key is pressed to
+ * delete a character from the editor
+ */
 void delete_character() {
     if (E.cy == E.numrows) return;
     if (E.cx == 0 && E.cy == 0) return;
@@ -96,6 +125,12 @@ void delete_character() {
         E.cy--;
     }
 }
+
+/**
+ * This function is used to move the cursor
+ * in the editor window according to key pressed
+ * @param key The arrow key
+ */
 void move_cursor(int key) {
     erow *row = (E.cy >= E.numrows) ? NULL : &E.row[E.cy];
 
@@ -134,6 +169,8 @@ void move_cursor(int key) {
         E.cx = rowlen;
     }
 }
+
+
 void insert_char_helper(erow *row, int at, int c) {
     if (at < 0 || at > row->size) at = row->size;
     row->chars = realloc(row->chars, row->size + 2);
@@ -143,6 +180,12 @@ void insert_char_helper(erow *row, int at, int c) {
     update_row(row);
     E.dirty++;
 }
+
+/**
+ * This function is called when a character is inserted using
+ * keyboard event
+ * @param c The ASCII value of the character to be inserted
+ */
 void insert_character(int c) {
     if (E.cy == E.numrows) {
         insert_row(E.numrows, "", 0);
@@ -150,6 +193,11 @@ void insert_character(int c) {
     insert_char_helper(&E.row[E.cy], E.cx, c);
     E.cx++;
 }
+
+/**
+ * This function is used to auto close the brackets and quotes
+ * @param c The bracket or quote ASCII value
+ */
 void auto_complete_bracket(int c){
     if(c=='('){
         insert_character(')');
@@ -187,6 +235,12 @@ void auto_complete_bracket(int c){
         }
     }
 }
+
+/**
+ * This function is used to read the listen to keyboard
+ * press event
+ * @return The ASCII value of the key pressed
+ */
 int read_key() {
     int nread;
     char c;
@@ -237,6 +291,11 @@ int read_key() {
     }
 }
 
+/**
+ * This function is used to process the key pressed
+ * and call the appropriate functions
+ * @param c The ASCII value of key pressed
+ */
 void process_keypress(int c) {
     static int quit_times = 1;
 
@@ -309,7 +368,13 @@ void process_keypress(int c) {
     }
     quit_times = 1;
 }
-
+/**
+ * This function is used to take input from user
+ * in command mode
+ * @param prompt The prompt text to display
+ * @param search Callback function to be called only used for search
+ * @return The input string inserted from user
+ */
 char *input_prompt(char *prompt, void (*search)(char *,int)) {
     size_t bufsize = 128;
     char *buf = malloc(bufsize);
