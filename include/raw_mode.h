@@ -10,6 +10,10 @@
 #include <termios.h>
 #include <unistd.h>
 #define TAB 9
+
+/**
+ * Editor row data structure
+ */
 typedef struct erow {
     int size;
     int rsize;
@@ -18,6 +22,9 @@ typedef struct erow {
     unsigned char *hl;
 } erow;
 
+/**
+ * Editor configuration variables
+ */
 struct editorConfig {
     int cx, cy;
     int rx;

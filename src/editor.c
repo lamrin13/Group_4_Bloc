@@ -11,7 +11,13 @@
 extern struct editorConfig E;
 
 
-
+/**
+ * @brief This function is used to insert new line
+ * in the editor
+ * @param at The y position of the cursor
+ * @param s The content of the file after the cursor position
+ * @param len Size of the content after the cursor
+ */
 void insert_newline(int at, char *s, size_t len) {
     if (at < 0 || at > E.numrows) return;
 
@@ -31,6 +37,11 @@ void insert_newline(int at, char *s, size_t len) {
     E.dirty++;
 }
 
+/**
+ * @brief This function is used to open a file in
+ * the editor
+ * @param filename Name of the file to open
+ */
 void editor_open(char *filename) {
     free(E.filename);
     E.filename = strdup(filename);
@@ -55,6 +66,13 @@ void editor_open(char *filename) {
     fclose(fp);
     E.dirty = 0;
 }
+
+/**
+ * @brief This function is used retrieve cursor's position
+ * @param rows The x position of the cursor
+ * @param cols The y position of the cursor
+ * @return 0 on success
+ */
 int get_cursor(int *rows, int *cols) {
     char buf[32];
     unsigned int i = 0;
@@ -73,6 +91,13 @@ int get_cursor(int *rows, int *cols) {
 
     return 0;
 }
+
+/**
+ * @brief This function is used to get the size of the editor window
+ * @param rows Number of rows in editor without using scroll
+ * @param cols Number of columns in editor without using scroll
+ * @return 0 on success
+ */
 int get_size(int *rows, int *cols) {
     struct winsize ws;
 
@@ -85,6 +110,10 @@ int get_size(int *rows, int *cols) {
         return 0;
     }
 }
+
+/**
+ * Initialize the editor structure
+ */
 void initalize_editor(){
     E.cx = 0;
     E.cy = 0;
@@ -104,6 +133,14 @@ void initalize_editor(){
     }
     E.screenrows -= 2;
 }
+
+/**
+ * @mainpage Main function which seats in infinite loop
+ * listining for the keyboard event
+ * @param argc Number of command line argument
+ * @param argv String array of command line arguments
+ * @return Never returns from main has to exit using exit() call
+ */
 int main(int argc, char *argv[]){
     raw_mode();
     initalize_editor();
